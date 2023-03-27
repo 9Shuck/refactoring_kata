@@ -62,7 +62,6 @@ class GildedRose(object):
             self._increase_quality(item, amount=2)
         else:
             self._increase_quality(item)
-        item.quality = min(item.quality, 50)
         self._decrease_sell_in(item)
 
     def update_sulfuras(self, item):
