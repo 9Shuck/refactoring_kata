@@ -25,34 +25,55 @@ class GildedRose(object):
     def _is_sulfuras(self, item):
         return item.name == "Sulfuras, Hand of Ragnaros"
 
+    def _increase_quality(self, item, amount=1):
+        item.quality = min(item.quality + amount, 50)
+
+    def _decrease_quality(self, item, amount=1):
+        item.quality = max(item.quality - amount, 0)
+
+    def _decrease_sell_in(self, item, amount=1):
+        item.sell_in = (item.sell_in - amount)
+
+    def _is_quality_max(self, item):
+        return item.quality < 50
+    
+    def _is_quality_min(self, item):
+        return item.quality > 0
+    
+    def _is_sell_in_negative(self, item):
+        return item.sell_in < 0
+
+    def _is_expired(self, item):
+        return item.sell_in < 0
+
     def update_aged_brie(self, item):
-        if item.quality < 50:
-            item.quality += 1
-        item.sell_in -= 1
-        if item.sell_in < 0 and item.quality < 50:
-            item.quality += 1
+        self._decrease_sell_in(item)
+        if self._is_quality_max(item):
+            self._increase_quality(item)
+        if self._is_sell_in_negative(item) and self._is_quality_max(item):
+            self._increase_quality(item)
 
     def update_backstage_passes(self, item):
         if item.sell_in <= 0:
             item.quality = 0
         elif item.sell_in <= 5:
-            item.quality += 3
+            self._increase_quality(item, amount=3)
         elif item.sell_in <= 10:
-            item.quality += 2
+            self._increase_quality(item, amount=2)
         else:
-            item.quality += 1
+            self._increase_quality(item)
         item.quality = min(item.quality, 50)
-        item.sell_in -= 1
+        self._decrease_sell_in(item)
 
     def update_sulfuras(self, item):
         pass
 
     def update_normal_items(self, item):
-        if item.quality > 0:
-            item.quality -= 1
-        item.sell_in -= 1
-        if item.sell_in < 0 and item.quality > 0:
-            item.quality -= 1
+        if self._is_quality_min(item):
+            self._decrease_quality(item)
+        self._decrease_sell_in(item)
+        if self._is_expired(item) and self._is_quality_min(item):
+            self._decrease_quality(item)
 
 
 class Item:
